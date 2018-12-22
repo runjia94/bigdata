@@ -2,6 +2,7 @@ package com.bigdata.etl.job;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.bigdata.etl.mr.LogBeanWritable;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -12,6 +13,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
@@ -22,19 +24,26 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public class ParseLogJob extends Configured implements Tool {
-    public static Text parseLog(String row) throws ParseException {
+    public static LogBeanWritable parseLog(String row) throws ParseException {
         String[] logPart = StringUtils.split(row,"\u1111");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         long timeTag = dateFormat.parse(logPart[0]).getTime();
         String activeName = logPart[1];
-        JSONObject bizdata = JSON.parseObject(logPart[2]);
+        JSONObject bizData = JSON.parseObject(logPart[2]);
 
-        JSONObject logData = new JSONObject();
-        logData.put("active_name",activeName);
-        logData.put("time_tag",timeTag);
-        logData.putAll(bizdata);
+        LogBeanWritable logData = new LogBeanWritable();
+        logData.setActiveName((activeName));
+        logData.setTimeTag(timeTag);
+        logData.setDeviceID(bizData.getString("device_id"));
+        logData.setIp(bizData.getString("ip"));
+        logData.setOrderID(bizData.getString("order_id"));
+        logData.setProductID(bizData.getString("product_id"));
+        logData.setReqUrl(bizData.getString("req_url"));
+        logData.setSessionID(bizData.getString("session_id"));
+        logData.setUserID(bizData.getString("user_id"));
 
-        return new Text(logData.toJSONString());
+
+        return logData;
 
 
 
@@ -42,16 +51,27 @@ public class ParseLogJob extends Configured implements Tool {
 
 
 
-    public static class LogMapper extends Mapper<LongWritable, Text, NullWritable, Text>{
+    public static class LogMapper extends Mapper<LongWritable, Text, LongWritable, LogBeanWritable>{
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException{
             try {
-                Text parsedLog = parseLog(value.toString());
-                context.write(null, parsedLog);
+                LogBeanWritable parsedLog = parseLog(value.toString());
+                context.write(key,parsedLog);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    public static class LogReducer extends Reducer<LongWritable, LogBeanWritable, NullWritable, Text>{
+        public void reduce(LongWritable key, Iterable<LogBeanWritable> values, Context context) throws IOException, InterruptedException{
+            for(LogBeanWritable v : values){
+                context.write(null, new Text(v.asJsonString()));
+            }
+
+        }
+
+    }
+
     @Override
     public int run(String[] args) throws Exception {
         Configuration config = getConf();
@@ -59,7 +79,10 @@ public class ParseLogJob extends Configured implements Tool {
         job.setJarByClass(ParseLogJob.class);
         job.setJobName("parselog");
         job.setMapperClass(LogMapper.class);
-        job.setNumReduceTasks(0);
+        job.setReducerClass(LogReducer.class);
+        job.setMapOutputKeyClass(LongWritable.class);
+        job.setMapOutputValueClass(LogBeanWritable.class);
+        job.setOutputValueClass(Text.class);
 
         FileInputFormat.addInputPath(job, new Path(args[0]));
         Path outputPath = new Path(args[1]);
