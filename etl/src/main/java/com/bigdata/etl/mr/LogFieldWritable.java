@@ -26,7 +26,7 @@ public class LogFieldWritable extends GenericWritable {
 
     @Override
     protected Class<? extends Writable>[] getTypes() {
-        return new Class[] {Text.class, LongWritable.class, DoubleWritable.class, NullWritable.class};
+        return new Class[] {Text.class, LongWritable.class, NullWritable.class, DoubleWritable.class};
     }
 
     public Object getObject() {
