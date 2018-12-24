@@ -34,9 +34,9 @@ public class LogFieldWritable extends GenericWritable {
         if(w instanceof Text){
             return w.toString();
         }else if (w instanceof LongWritable){
-            return ((LongWritable) w).get();
+            return ((LongWritable)w).get();
         }else if (w instanceof DoubleWritable){
-            return ((DoubleWritable) w).get();
+            return ((DoubleWritable)w).get();
         }else {
             return null;
         }
