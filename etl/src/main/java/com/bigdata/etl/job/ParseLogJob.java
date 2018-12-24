@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bigdata.etl.mr.LogFieldWritable;
 import com.bigdata.etl.mr.LogGenericWritable;
+import com.bigdata.etl.utils.IPUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -73,10 +74,31 @@ public class ParseLogJob extends Configured implements Tool {
     }
 
     public static class LogReducer extends Reducer<LongWritable, LogGenericWritable, NullWritable, Text>{
+
+
+        public void setup(Context context) throws IOException, InterruptedException{
+            FileSystem fs = FileSystem.get(context.getConfiguration());
+            Path ipFile = new Path("/user/hadoop/lib/17monipdb.dat");
+            Path localPath = new Path(this.getClass().getResource("/").getPath());
+            fs.copyToLocalFile(ipFile,localPath);
+            IPUtil.load("17monipdb.dat");
+        }
+
         public void reduce(LongWritable key, Iterable<LogGenericWritable> values, Context context) throws IOException, InterruptedException{
             for(LogGenericWritable v : values){
-                context.write(null, new Text(v.asJsonString()));
+                String ip = (String)v.getObject("ip");
+                String[] address = IPUtil.find(ip);
+                JSONObject addr = new JSONObject();
+                addr.put("country", address[0]);
+                addr.put("province", address[1]);
+                addr.put("city", address[2]);
+
+                JSONObject datum = JSON.parseObject(v.asJsonString());
+                datum.put("address", addr);
+                context.write(null, new Text(datum.toJSONString()));
             }
+            //在reduce端，ip解析成地址，如果在map端解析，就增加了maptoreduce的量
+            //读取文件是不能写在reduce里的，因为reduce是一直while的。所以读取操作要写在reduce外面
 
         }
 
