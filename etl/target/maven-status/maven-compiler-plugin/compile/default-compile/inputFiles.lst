@@ -1,0 +1,10 @@
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/job/ParseLogJob.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/LogBeanWritable.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/utils/IPUtil.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/LogGenericWritable.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/TextLongGroupComparator.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/TextLongWritable.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/LogOutputFormat.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/LogFieldWritable.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/mr/TextLongPartitioner.java
+/Users/wangrunjia/project/etl/src/main/java/com/bigdata/etl/udf/UDFZodiac.java

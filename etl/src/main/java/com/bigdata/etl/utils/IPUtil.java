@@ -30,6 +30,7 @@ public class IPUtil {
     }
 
     public static boolean enableFileWatch = false;
+
     private static int offset;
     private static int[] index = new int[256];
     private static ByteBuffer dataBuffer;

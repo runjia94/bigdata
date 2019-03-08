@@ -37,7 +37,7 @@ public abstract class LogGenericWritable implements Writable {
 
         //init data
         datum = new LogFieldWritable[name.length];
-        for(int i = 0; i<datum.length; i++){
+        for(int i = 0; i<name.length; i++){
             datum[i] = new LogFieldWritable();
         }
     }
@@ -66,7 +66,6 @@ public abstract class LogGenericWritable implements Writable {
         return index;
     }
 
-    @Override
     //序列化与反序列化
     public void write(DataOutput out) throws IOException {
         WritableUtils.writeVInt(out, name.length);
@@ -75,7 +74,6 @@ public abstract class LogGenericWritable implements Writable {
         }
     }
 
-    @Override
     public void readFields(DataInput in) throws IOException {
         int length = WritableUtils.readVInt(in);
         datum = new LogFieldWritable[length];

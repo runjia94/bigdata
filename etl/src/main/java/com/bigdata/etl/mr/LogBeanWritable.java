@@ -105,7 +105,6 @@ public class LogBeanWritable implements Writable {
 
     }
 
-    @Override
     public void readFields(DataInput in) throws IOException {
         activeName = WritableUtils.readString(in);
         sessionID = WritableUtils.readString(in);
